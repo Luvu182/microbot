@@ -51,21 +51,27 @@ cd microbot
 
 # Install Python dependencies
 pip install -e .
-
-# Copy and configure environment
-cp .env.example .env
-# Edit .env with your API keys and channel tokens
 ```
 
 ### Run
 
 ```bash
-# CLI mode
-python -m microbot.nanobot
-
-# With web UI
-cd web && npm install && npm run dev
+# Start the gateway (API + Web UI)
+microbot gateway
 ```
+
+Open **http://localhost:18790** in your browser to access the Web UI.
+
+### Configuration
+
+All configuration is done via **Web UI** or `~/.microbot/config.json`:
+
+```bash
+# Or copy the example config to get started manually
+cp config.example.json ~/.microbot/config.json
+```
+
+See [`config.example.json`](config.example.json) for all available options.
 
 ## Project Structure
 
@@ -88,12 +94,16 @@ microbot/
 
 | Channel | Status |
 |---------|--------|
+| Web UI | Supported |
 | Telegram | Supported |
 | Discord | Supported |
 | Slack | Supported |
-| Web UI | Supported |
-| Email | Supported |
+| Feishu / Lark | Supported |
+| DingTalk | Supported |
 | WhatsApp | Supported |
+| Email | Supported |
+| QQ | Supported |
+| Matrix | Supported |
 | Zalo | Planned |
 
 ## Supported Providers
