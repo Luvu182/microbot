@@ -44,7 +44,11 @@ class ExecTool(Tool):
 
     @property
     def description(self) -> str:
-        return "Execute a shell command and return its output. Use with caution."
+        return (
+            "Execute a shell command and return its output. Use with caution. "
+            "DO NOT use exec+python to edit files — use edit_file with "
+            "line_start/line_end instead (more reliable for non-ASCII text)."
+        )
 
     @property
     def parameters(self) -> dict[str, Any]:
