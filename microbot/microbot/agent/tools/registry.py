@@ -75,14 +75,6 @@ class ToolRegistry:
             else:
                 result += f"\n\n[STUCK: {name} called {repeat_count + 1}x with same params. Try a different approach.]"
 
-        if name == "exec" and "python" in params.get("command", "").lower():
-            cmd = params.get("command", "")
-            if ".replace(" in cmd and ("open(" in cmd or "write" in cmd):
-                result += (
-                    "\n\n[HINT: Use edit_file(line_start=N, new_text=...) "
-                    "instead of exec+python for file edits — more reliable for non-ASCII text.]"
-                )
-
         return result
 
     @property
