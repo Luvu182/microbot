@@ -71,7 +71,7 @@ All configuration is done via **Web UI** or `~/.microbot/config.json`:
 cp config.example.json ~/.microbot/config.json
 ```
 
-See [`config.example.json`](config.example.json) for all available options.
+See [`config.example.json`](microbot/config.example.json) for all available options.
 
 ## Project Structure
 

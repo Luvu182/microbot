@@ -48,8 +48,8 @@ class ZaloChannel(BaseChannel):
                             "type": "auth",
                             "token": self.config.bridge_token,
                         }))
-                    self._connected = True
-                    logger.info("Connected to Zalo bridge")
+                    # Do NOT set _connected=True here — wait for status:connected event from bridge
+                    logger.info("Connected to Zalo bridge WebSocket (awaiting auth confirmation)")
 
                     async for message in ws:
                         try:

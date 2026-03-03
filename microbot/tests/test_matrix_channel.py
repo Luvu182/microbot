@@ -159,6 +159,8 @@ class _FakeAsyncClient:
 
 
 def _make_config(**kwargs) -> MatrixConfig:
+    # Default allow_from=["*"] so tests not focused on access control pass.
+    kwargs.setdefault("allow_from", ["*"])
     return MatrixConfig(
         enabled=True,
         homeserver="https://matrix.org",
@@ -274,7 +276,8 @@ async def test_stop_stops_sync_forever_before_close(monkeypatch) -> None:
 
 
 @pytest.mark.asyncio
-async def test_room_invite_joins_when_allow_list_is_empty() -> None:
+async def test_room_invite_denies_when_allow_list_is_empty() -> None:
+    """Empty allow_from list means deny all — no auto-join."""
     channel = MatrixChannel(_make_config(allow_from=[]), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
     channel.client = client
@@ -284,7 +287,7 @@ async def test_room_invite_joins_when_allow_list_is_empty() -> None:
 
     await channel._on_room_invite(room, event)
 
-    assert client.join_calls == ["!room:matrix.org"]
+    assert client.join_calls == []
 
 
 @pytest.mark.asyncio

@@ -2,6 +2,7 @@
 
 import difflib
 import re
+import unicodedata
 from pathlib import Path
 from typing import Any
 
@@ -265,20 +266,36 @@ class EditFileTool(Tool):
 
     @staticmethod
     def _text_edit(file_path: Path, content: str, old_text: str, new_text: str) -> str:
-        """Exact text match and replace."""
-        if old_text not in content:
-            return EditFileTool._not_found_message(old_text, content, str(file_path))
+        """Exact text match and replace, with Unicode NFC normalization fallback."""
+        # --- Try exact match first (fast path) ---
+        if old_text in content:
+            count = content.count(old_text)
+            if count > 1:
+                return f"Warning: old_text appears {count} times. Provide more context to make it unique."
+            new_content = content.replace(old_text, new_text, 1)
+            if new_content == content:
+                return "Error: Replacement produced identical content — no changes written."
+            file_path.write_text(new_content, encoding="utf-8")
+            return f"Successfully edited {file_path}"
 
-        count = content.count(old_text)
-        if count > 1:
-            return f"Warning: old_text appears {count} times. Provide more context to make it unique."
+        # --- NFC normalization fallback (handles Vietnamese/CJK composed vs decomposed) ---
+        norm_content = unicodedata.normalize("NFC", content)
+        norm_old = unicodedata.normalize("NFC", old_text)
 
-        new_content = content.replace(old_text, new_text, 1)
-        if new_content == content:
-            return "Error: Replacement produced identical content — no changes written."
+        if norm_old in norm_content:
+            count = norm_content.count(norm_old)
+            if count > 1:
+                return f"Warning: old_text appears {count} times (after Unicode normalization). Provide more context."
+            # Find position in normalized content, then replace in original
+            # We normalize the full content and do the replacement there
+            norm_new = unicodedata.normalize("NFC", new_text)
+            new_content = norm_content.replace(norm_old, norm_new, 1)
+            if new_content == norm_content:
+                return "Error: Replacement produced identical content — no changes written."
+            file_path.write_text(new_content, encoding="utf-8")
+            return f"Successfully edited {file_path} (matched after Unicode NFC normalization)"
 
-        file_path.write_text(new_content, encoding="utf-8")
-        return f"Successfully edited {file_path}"
+        return EditFileTool._not_found_message(old_text, content, str(file_path))
 
     @staticmethod
     def _not_found_message(old_text: str, content: str, path: str) -> str:

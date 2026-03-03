@@ -279,13 +279,20 @@ class ChannelManager:
         }
 
     def get_bridge_channel_status(self, name: str) -> dict | None:
-        """Return bridge channel connection status and QR string, or None if not enabled."""
+        """Return bridge channel connection status and QR string, or None if not enabled.
+
+        A channel is considered a bridge channel if it exposes _last_qr (QR-based login).
+        Falls back to _connected flag for channels that haven't received a status event yet.
+        """
         channel = self.channels.get(name)
         if channel is None:
             return None
-        qr = getattr(channel, "_last_qr", None)
-        # Each bridge channel stores status as _{name}_status (e.g. _zalo_status, _whatsapp_status)
-        status = getattr(channel, f"_{name}_status", None) or (
+        # Only bridge channels expose _last_qr — non-bridge channels return None
+        if not hasattr(channel, "_last_qr"):
+            return None
+        qr = channel._last_qr  # type: ignore[attr-defined]
+        # Prefer dedicated _{name}_status attr; fall back to _connected bool
+        status: str = getattr(channel, f"_{name}_status", None) or (
             "connected" if getattr(channel, "_connected", False) else "disconnected"
         )
         return {"qr": qr, "status": status}

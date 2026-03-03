@@ -84,11 +84,22 @@ microbot/
 │   ├── session/       # Conversation & memory management
 │   ├── skills/        # Agent skill system
 │   └── config/        # Configuration management
-├── bridge/            # Node.js bridge for platform APIs
+├── bridge/            # Node.js WhatsApp bridge (auto-managed)
+│   └── zalo/          # Node.js Zalo bridge (auto-managed)
 ├── web/               # Web UI (Vite + React)
 ├── tests/             # Test suite
 └── docs/              # Documentation
 ```
+
+## Bridge Channels (Zalo & WhatsApp)
+
+Zalo and WhatsApp use Node.js bridges that are **auto-managed** by the gateway:
+
+1. Enable the channel in Web UI Settings → Channels
+2. Click **"Connect with QR"** — the bridge starts automatically
+3. Scan the QR code in the modal → done
+
+No manual `npm install` or bridge URL configuration needed. The gateway handles install, build, and process lifecycle automatically. Set `autoBridge: false` in `config.json` to manage bridges manually.
 
 ## Supported Channels
 
@@ -96,13 +107,12 @@ microbot/
 |---------|--------|----------|
 | Telegram | Supported | Primary |
 | Web UI | Supported | Primary |
-| Zalo | Supported | Primary |
-| Lark | Planned | Primary |
+| Zalo | Supported (QR login) | Primary |
 | Discord | Supported | |
 | Slack | Supported | |
-| Feishu | Supported | |
+| Feishu / Lark | Supported | Primary |
 | DingTalk | Supported | |
-| WhatsApp | Supported | |
+| WhatsApp | Supported (QR login) | |
 | Email | Supported | |
 | QQ | Supported | |
 | Matrix | Supported | |
