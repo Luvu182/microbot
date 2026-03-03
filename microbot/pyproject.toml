@@ -69,37 +69,37 @@ Repository = "https://github.com/Luvu182/microbot"
 "Upstream (kioku)" = "https://github.com/phuc-nt/kioku-agent-kit-lite"
 
 [project.scripts]
-microbot = "nanobot.cli.commands:app"
+microbot = "microbot.cli.commands:app"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["nanobot"]
+packages = ["microbot"]
 
 [tool.hatch.build.targets.wheel.sources]
-"nanobot" = "nanobot"
+"microbot" = "microbot"
 
 # Include non-Python files in skills and templates
 [tool.hatch.build]
 include = [
-    "nanobot/**/*.py",
-    "nanobot/templates/**/*.md",
-    "nanobot/skills/**/*.md",
-    "nanobot/skills/**/*.sh",
+    "microbot/**/*.py",
+    "microbot/templates/**/*.md",
+    "microbot/skills/**/*.md",
+    "microbot/skills/**/*.sh",
 ]
 
 [tool.hatch.build.targets.sdist]
 include = [
-    "nanobot/",
+    "microbot/",
     "bridge/",
     "README.md",
     "LICENSE",
 ]
 
 [tool.hatch.build.targets.wheel.force-include]
-"bridge" = "nanobot/bridge"
+"bridge" = "microbot/bridge"
 
 [tool.ruff]
 line-length = 100

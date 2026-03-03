@@ -5,17 +5,19 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from nanobot.agent.loop import AgentLoop
-from nanobot.agent.tools.message import MessageTool
-from nanobot.bus.events import InboundMessage, OutboundMessage
-from nanobot.bus.queue import MessageBus
-from nanobot.providers.base import LLMResponse, ToolCallRequest
+from microbot.agent.loop import AgentLoop
+from microbot.agent.tools.message import MessageTool
+from microbot.bus.events import InboundMessage, OutboundMessage
+from microbot.bus.queue import MessageBus
+from microbot.providers.base import LLMResponse, ToolCallRequest
 
 
 def _make_loop(tmp_path: Path) -> AgentLoop:
     bus = MessageBus()
     provider = MagicMock()
     provider.get_default_model.return_value = "test-model"
+    # Prevent MagicMock auto-creating stream_chat (only real providers have it)
+    del provider.stream_chat
     return AgentLoop(bus=bus, provider=provider, workspace=tmp_path, model="test-model", memory_window=10)
 
 

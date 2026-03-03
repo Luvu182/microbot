@@ -77,7 +77,7 @@ See [`config.example.json`](config.example.json) for all available options.
 
 ```
 microbot/
-├── nanobot/           # Core agent engine (from nanobot)
+├── microbot/          # Core agent engine (from nanobot)
 │   ├── agent/         # Agent logic & tool execution
 │   ├── channels/      # Chat platform integrations
 │   ├── providers/     # LLM provider adapters
@@ -96,7 +96,7 @@ microbot/
 |---------|--------|----------|
 | Telegram | Supported | Primary |
 | Web UI | Supported | Primary |
-| Zalo | Planned | Primary |
+| Zalo | Supported | Primary |
 | Lark | Planned | Primary |
 | Discord | Supported | |
 | Slack | Supported | |

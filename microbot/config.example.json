@@ -6,8 +6,13 @@
       "provider": "auto",
       "maxTokens": 8192,
       "temperature": 0.1,
-      "maxToolIterations": 40
-    }
+      "maxToolIterations": 40,
+      "kioku": {
+        "enabled": true,
+        "embedProvider": "fastembed",
+        "embedModel": "intfloat/multilingual-e5-large",
+        "embedDim": 1024
+      }
   },
   "providers": {
     "anthropic": { "apiKey": "" },
@@ -50,6 +55,12 @@
     "whatsapp": {
       "enabled": false,
       "bridgeUrl": "ws://localhost:3001",
+      "bridgeToken": "",
+      "allowFrom": []
+    },
+    "zalo": {
+      "enabled": false,
+      "bridgeUrl": "ws://localhost:3002",
       "bridgeToken": "",
       "allowFrom": []
     },

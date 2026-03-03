@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from nanobot.agent.memory import KIOKU_AVAILABLE, MemoryStore
+from microbot.agent.memory import KIOKU_AVAILABLE, MemoryStore
 
 
 @pytest.fixture
@@ -114,12 +114,12 @@ class TestMemoryTools:
 
     @pytest.fixture
     def search_tool(self, memory_store_with_kioku):
-        from nanobot.agent.tools.memory import MemorySearchTool
+        from microbot.agent.tools.memory import MemorySearchTool
         return MemorySearchTool(memory_store_with_kioku)
 
     @pytest.fixture
     def recall_tool(self, memory_store_with_kioku):
-        from nanobot.agent.tools.memory import MemoryRecallTool
+        from microbot.agent.tools.memory import MemoryRecallTool
         return MemoryRecallTool(memory_store_with_kioku)
 
     @pytest.mark.asyncio
@@ -139,7 +139,7 @@ class TestMemoryTools:
     async def test_search_tool_unavailable(self, workspace):
         """Search tool with no kioku returns unavailable message."""
         store = MemoryStore(workspace, kioku_config={"enabled": False})
-        from nanobot.agent.tools.memory import MemorySearchTool
+        from microbot.agent.tools.memory import MemorySearchTool
         tool = MemorySearchTool(store)
         result = await tool.execute(query="test")
         assert "unavailable" in result.lower()
