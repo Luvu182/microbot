@@ -1,13 +1,19 @@
 [project]
-name = "nanobot-ai"
-version = "0.1.4.post3"
-description = "A lightweight personal AI assistant framework"
+name = "microbot"
+version = "0.1.0"
+description = "Lightweight AI assistant for Vietnamese communities, built on nanobot + kioku"
 requires-python = ">=3.11"
 license = {text = "MIT"}
 authors = [
-    {name = "nanobot contributors"}
+    {name = "Luvu182"},
+    {name = "nanobot contributors (original nanobot code)"}
 ]
-keywords = ["ai", "agent", "chatbot"]
+keywords = ["ai", "agent", "chatbot", "vietnamese", "lightweight"]
+
+[project.urls]
+Repository = "https://github.com/Luvu182/microbot"
+"Upstream (nanobot)" = "https://github.com/HKUDS/nanobot"
+"Upstream (kioku)" = "https://github.com/phuc-nt/kioku-agent-kit-lite"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -59,7 +65,7 @@ dev = [
 ]
 
 [project.scripts]
-nanobot = "nanobot.cli.commands:app"
+microbot = "nanobot.cli.commands:app"
 
 [build-system]
 requires = ["hatchling"]
