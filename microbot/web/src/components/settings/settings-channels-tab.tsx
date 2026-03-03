@@ -3,6 +3,9 @@ import { useState } from 'react'
 import { Toggle } from './settings-form-fields'
 import { SettingsChannelForm } from './settings-channel-form'
 import { CHANNEL_DEFS } from './settings-channel-definitions'
+import { BridgeChannelStatus } from './bridge-channel-status'
+
+const BRIDGE_CHANNELS = new Set(['zalo', 'whatsapp'])
 
 interface ChannelsTabProps {
   channels: Record<string, unknown>
@@ -78,6 +81,9 @@ export function ChannelsTab({ channels, onChange }: ChannelsTabProps) {
                   data={data}
                   onChange={(d) => updateChannel(def.name, d)}
                 />
+                {BRIDGE_CHANNELS.has(def.name) && enabled && (
+                  <BridgeChannelStatus channel={def.name} active={isOpen && enabled} />
+                )}
               </div>
             )}
           </div>

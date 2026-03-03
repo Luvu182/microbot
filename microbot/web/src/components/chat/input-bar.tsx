@@ -47,7 +47,7 @@ export function InputBar({ onSend, onStop, isThinking, isConnected }: InputBarPr
           ref={textareaRef}
           rows={1}
           placeholder={
-            !isConnected ? 'Connecting…' : isThinking ? 'Agent is thinking…' : 'Message Nanobot…'
+            !isConnected ? 'Connecting…' : isThinking ? 'Agent is thinking…' : 'Message Microbot…'
           }
           disabled={!canSend}
           onKeyDown={handleKeyDown}

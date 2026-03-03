@@ -1,4 +1,4 @@
-// WebSocket protocol handler for nanobot backend
+// WebSocket protocol handler for microbot backend
 // Handles connection lifecycle, JSON frame parsing, and auto-reconnect
 
 import type { WsClientFrame, WsServerFrame } from '../types/messages'

@@ -31,7 +31,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         return
       }
       // Store in sessionStorage (cleared on tab close — XSS mitigation)
-      sessionStorage.setItem('nanobot-token', trimmed)
+      sessionStorage.setItem('microbot-token', trimmed)
       onLogin(trimmed)
     } catch {
       setError('Could not reach server')
@@ -45,7 +45,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       <div className="w-full max-w-sm px-6 py-8 bg-gray-50 dark:bg-gray-800 rounded-2xl shadow-lg">
         <div className="text-center mb-6">
           <span className="text-4xl">🤖</span>
-          <h1 className="mt-2 text-xl font-semibold text-gray-900 dark:text-white">Nanobot</h1>
+          <h1 className="mt-2 text-xl font-semibold text-gray-900 dark:text-white">Microbot</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Enter your access token</p>
         </div>
 

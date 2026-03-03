@@ -41,10 +41,12 @@ export const CHANNEL_DEFS: ChannelDef[] = [
   {
     name: 'whatsapp',
     label: 'WhatsApp',
-    fields: [
-      { key: 'bridgeUrl', label: 'Bridge URL', type: 'text', placeholder: 'ws://localhost:3001' },
-      { key: 'bridgeToken', label: 'Bridge Token', type: 'secret' },
-    ],
+    fields: [],
+  },
+  {
+    name: 'zalo',
+    label: 'Zalo',
+    fields: [],
   },
   {
     name: 'feishu',

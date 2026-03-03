@@ -89,7 +89,7 @@ export function AgentTab({ agents, onChange }: AgentTabProps) {
 
         <TextInput
           label="Workspace Path"
-          value={(defaults.workspace as string) ?? '~/.nanobot/workspace'}
+          value={(defaults.workspace as string) ?? '~/.microbot/workspace'}
           onChange={(v) => update('workspace', v)}
           helpText="Default workspace directory for the agent"
         />

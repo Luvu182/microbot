@@ -1,4 +1,4 @@
-// REST API client for nanobot backend
+// REST API client for microbot backend
 // All endpoints: /api/*
 
 import type {

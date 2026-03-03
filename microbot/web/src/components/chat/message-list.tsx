@@ -13,10 +13,21 @@ export function MessageList({ messages, footer }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // Auto-scroll to bottom only when message count changes (not on every activity update)
+  // Detect whether the last message is still streaming
+  const lastMsg = messages[messages.length - 1]
+  const isStreaming = lastMsg?.streaming === true
+
+  // Auto-scroll when message count changes OR while streaming (tokens arriving)
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages.length])
+
+  // During streaming, keep scrolling to bottom as content grows
+  useEffect(() => {
+    if (isStreaming) {
+      bottomRef.current?.scrollIntoView({ behavior: 'auto' })
+    }
+  }, [isStreaming, lastMsg?.content])
 
   return (
     <div
@@ -29,7 +40,7 @@ export function MessageList({ messages, footer }: MessageListProps) {
       {messages.length === 0 && (
         <div className="flex flex-col items-center justify-center h-full text-center text-gray-400 dark:text-gray-600 select-none pointer-events-none pt-16">
           <div className="text-5xl mb-4 opacity-30">N</div>
-          <p className="text-sm">Start a conversation with Nanobot</p>
+          <p className="text-sm">Start a conversation with Microbot</p>
           <p className="text-xs mt-1 opacity-60">Messages are streamed in real-time</p>
         </div>
       )}

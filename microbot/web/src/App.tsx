@@ -18,34 +18,34 @@ type Page = 'chat' | 'dashboard' | 'channels' | 'config' | 'cron' | 'sessions' |
 
 // Token from meta tag injected by backend (production mode)
 function getMetaToken(): string | undefined {
-  const meta = document.querySelector<HTMLMetaElement>('meta[name="nanobot-token"]')
+  const meta = document.querySelector<HTMLMetaElement>('meta[name="microbot-token"]')
   return meta?.content || undefined
 }
 
 // Resolve auth token: meta tag > sessionStorage > undefined
 function resolveToken(): string | undefined {
-  return getMetaToken() || sessionStorage.getItem('nanobot-token') || undefined
+  return getMetaToken() || sessionStorage.getItem('microbot-token') || undefined
 }
 
 // Generate / restore a default session key for first-time visitors
 function defaultSessionKey(): string {
-  const stored = localStorage.getItem('nanobot-session-key')
+  const stored = localStorage.getItem('microbot-session-key')
   if (stored) return stored
   const key = `web-${Date.now()}`
-  localStorage.setItem('nanobot-session-key', key)
+  localStorage.setItem('microbot-session-key', key)
   return key
 }
 
 // Dark mode: default dark, persisted in localStorage
 function useDarkMode() {
   const [isDark, setIsDark] = useState<boolean>(() => {
-    const stored = localStorage.getItem('nanobot-dark-mode')
+    const stored = localStorage.getItem('microbot-dark-mode')
     return stored === null ? true : stored === 'true'
   })
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark)
-    localStorage.setItem('nanobot-dark-mode', String(isDark))
+    localStorage.setItem('microbot-dark-mode', String(isDark))
   }, [isDark])
 
   const toggle = useCallback(() => setIsDark((d) => !d), [])
@@ -89,7 +89,7 @@ export default function App() {
 
   const handleSelectSession = useCallback((key: string) => {
     setSessionKey(key)
-    localStorage.setItem('nanobot-session-key', key)
+    localStorage.setItem('microbot-session-key', key)
     setSidebarOpen(false)
     setActivePage('chat')
   }, [])
@@ -97,7 +97,7 @@ export default function App() {
   const handleNewSession = useCallback(() => {
     const key = `web-${Date.now()}`
     setSessionKey(key)
-    localStorage.setItem('nanobot-session-key', key)
+    localStorage.setItem('microbot-session-key', key)
     chat.resetSession()
     setSidebarOpen(false)
     setActivePage('chat')

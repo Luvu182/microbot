@@ -51,7 +51,7 @@ export function Header({ wsStatus, isDark, onToggleDark, onToggleSidebar, sessio
       {/* Logo */}
       <div className="flex items-center gap-2 font-semibold text-gray-900 dark:text-white select-none">
         <span className="text-lg">🤖</span>
-        <span className="text-base">Nanobot</span>
+        <span className="text-base">Microbot</span>
       </div>
 
       {/* Session key pill */}
