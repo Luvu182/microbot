@@ -133,6 +133,10 @@ class EditFileTool(Tool):
             if not file_path.exists():
                 return f"Error: File not found: {path}"
 
+            # Reject no-op edits early so the LLM doesn't loop on false success
+            if old_text == new_text:
+                return "Error: old_text and new_text are identical — nothing to change."
+
             content = file_path.read_text(encoding="utf-8")
 
             if old_text not in content:
@@ -144,6 +148,11 @@ class EditFileTool(Tool):
                 return f"Warning: old_text appears {count} times. Please provide more context to make it unique."
 
             new_content = content.replace(old_text, new_text, 1)
+
+            # Verify the file actually changed (guards against subtle encoding issues)
+            if new_content == content:
+                return "Error: Replacement produced identical content — no changes written."
+
             file_path.write_text(new_content, encoding="utf-8")
 
             return f"Successfully edited {file_path}"

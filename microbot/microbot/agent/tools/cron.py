@@ -79,6 +79,9 @@ class CronTool(Tool):
             return self._remove_job(job_id)
         return f"Unknown action: {action}"
 
+    _MIN_INTERVAL_SECONDS = 30  # prevent spam
+    _MAX_JOBS = 50              # prevent resource exhaustion
+
     def _add_job(
         self,
         message: str,
@@ -91,6 +94,10 @@ class CronTool(Tool):
             return "Error: message is required for add"
         if not self._channel or not self._chat_id:
             return "Error: no session context (channel/chat_id)"
+        if every_seconds is not None and every_seconds < self._MIN_INTERVAL_SECONDS:
+            return f"Error: minimum interval is {self._MIN_INTERVAL_SECONDS}s"
+        if len(self._cron.list_jobs()) >= self._MAX_JOBS:
+            return f"Error: maximum {self._MAX_JOBS} jobs reached, remove some first"
         if tz and not cron_expr:
             return "Error: tz can only be used with cron_expr"
         if tz:
