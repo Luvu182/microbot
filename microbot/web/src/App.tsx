@@ -12,8 +12,9 @@ import { ChannelsPage } from './pages/channels'
 import { ConfigPage } from './pages/config'
 import { CronPage } from './pages/cron'
 import { SessionsPage } from './pages/sessions'
+import { SettingsPage } from './pages/settings'
 
-type Page = 'chat' | 'dashboard' | 'channels' | 'config' | 'cron' | 'sessions'
+type Page = 'chat' | 'dashboard' | 'channels' | 'config' | 'cron' | 'sessions' | 'settings'
 
 // Token from meta tag injected by backend (production mode)
 function getMetaToken(): string | undefined {
@@ -135,6 +136,8 @@ export default function App() {
         return <CronPage token={token} />
       case 'sessions':
         return <SessionsPage token={token} />
+      case 'settings':
+        return <SettingsPage token={token} />
       default:
         return (
           <>
