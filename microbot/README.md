@@ -92,19 +92,20 @@ microbot/
 
 ## Supported Channels
 
-| Channel | Status |
-|---------|--------|
-| Web UI | Supported |
-| Telegram | Supported |
-| Discord | Supported |
-| Slack | Supported |
-| Feishu / Lark | Supported |
-| DingTalk | Supported |
-| WhatsApp | Supported |
-| Email | Supported |
-| QQ | Supported |
-| Matrix | Supported |
-| Zalo | Planned |
+| Channel | Status | Priority |
+|---------|--------|----------|
+| Telegram | Supported | Primary |
+| Web UI | Supported | Primary |
+| Zalo | Planned | Primary |
+| Lark | Planned | Primary |
+| Discord | Supported | |
+| Slack | Supported | |
+| Feishu | Supported | |
+| DingTalk | Supported | |
+| WhatsApp | Supported | |
+| Email | Supported | |
+| QQ | Supported | |
+| Matrix | Supported | |
 
 ## Supported Providers
 

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -10,45 +9,44 @@ from loguru import logger
 
 from nanobot.utils.helpers import ensure_dir
 
+try:
+    from kioku_lite.service import KiokuLiteService
+    from kioku_lite.config import Settings as KiokuSettings
+    KIOKU_AVAILABLE = True
+except ImportError:
+    KiokuLiteService = None  # type: ignore[misc,assignment]
+    KiokuSettings = None  # type: ignore[misc,assignment]
+    KIOKU_AVAILABLE = False
+
 if TYPE_CHECKING:
     from nanobot.providers.base import LLMProvider
     from nanobot.session.manager import Session
 
 
-_SAVE_MEMORY_TOOL = [
-    {
-        "type": "function",
-        "function": {
-            "name": "save_memory",
-            "description": "Save the memory consolidation result to persistent storage.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "history_entry": {
-                        "type": "string",
-                        "description": "A paragraph (2-5 sentences) summarizing key events/decisions/topics. "
-                        "Start with [YYYY-MM-DD HH:MM]. Include detail useful for grep search.",
-                    },
-                    "memory_update": {
-                        "type": "string",
-                        "description": "Full updated long-term memory as markdown. Include all existing "
-                        "facts plus new ones. Return unchanged if nothing new.",
-                    },
-                },
-                "required": ["history_entry", "memory_update"],
-            },
-        },
-    }
-]
-
-
 class MemoryStore:
-    """Two-layer memory: MEMORY.md (long-term facts) + HISTORY.md (grep-searchable log)."""
+    """Two-layer memory: MEMORY.md (curated) + kioku (search/KG) or HISTORY.md (fallback)."""
 
-    def __init__(self, workspace: Path):
+    def __init__(self, workspace: Path, *, kioku_config: dict | None = None):
         self.memory_dir = ensure_dir(workspace / "memory")
         self.memory_file = self.memory_dir / "MEMORY.md"
-        self.history_file = self.memory_dir / "HISTORY.md"
+        self.history_file = self.memory_dir / "HISTORY.md"  # legacy fallback
+
+        # Initialize kioku backend
+        self.kioku: KiokuLiteService | None = None
+        if KIOKU_AVAILABLE and (kioku_config is None or kioku_config.get("enabled", True)):
+            try:
+                cfg = kioku_config or {}
+                settings = KiokuSettings(
+                    memory_dir=self.memory_dir / "entries",
+                    data_dir=self.memory_dir / "data",
+                    embed_provider=cfg.get("embed_provider", "fastembed"),
+                    embed_model=cfg.get("embed_model", "intfloat/multilingual-e5-large"),
+                    embed_dim=cfg.get("embed_dim", 1024),
+                )
+                self.kioku = KiokuLiteService(settings)
+                logger.info("Kioku memory backend initialized")
+            except Exception as e:
+                logger.warning("Kioku init failed, using file fallback: {}", e)
 
     def read_long_term(self) -> str:
         if self.memory_file.exists():
@@ -59,12 +57,60 @@ class MemoryStore:
         self.memory_file.write_text(content, encoding="utf-8")
 
     def append_history(self, entry: str) -> None:
+        """Save history entry via kioku (preferred) or append to HISTORY.md (fallback)."""
+        if self.kioku:
+            try:
+                self.kioku.save_memory(entry)
+                return
+            except Exception as e:
+                logger.warning("Kioku save failed, falling back to file: {}", e)
         with open(self.history_file, "a", encoding="utf-8") as f:
             f.write(entry.rstrip() + "\n\n")
 
     def get_memory_context(self) -> str:
         long_term = self.read_long_term()
         return f"## Long-term Memory\n{long_term}" if long_term else ""
+
+    def search(self, query: str, limit: int = 10, **kwargs) -> dict | None:
+        """Search memories via kioku. Returns None if unavailable."""
+        if not self.kioku:
+            return None
+        try:
+            return self.kioku.search_memories(query, limit=limit, **kwargs)
+        except Exception as e:
+            logger.warning("Kioku search failed: {}", e)
+            return None
+
+    def recall_entity(self, entity: str, max_hops: int = 2, limit: int = 10) -> dict | None:
+        """Recall entity via kioku graph. Returns None if unavailable."""
+        if not self.kioku:
+            return None
+        try:
+            return self.kioku.recall_entity(entity, max_hops=max_hops, limit=limit)
+        except Exception as e:
+            logger.warning("Kioku recall failed: {}", e)
+            return None
+
+    def kg_index(self, content_hash: str, entities: list, relationships: list) -> dict | None:
+        """Index entities/relationships in kioku KG. Returns None if unavailable."""
+        if not self.kioku:
+            return None
+        try:
+            from kioku_lite.service import EntityInput, RelationshipInput
+            ents = [EntityInput(**e) if isinstance(e, dict) else e for e in entities]
+            rels = [RelationshipInput(**r) if isinstance(r, dict) else r for r in relationships]
+            return self.kioku.kg_index(content_hash, ents, rels)
+        except Exception as e:
+            logger.warning("Kioku kg_index failed: {}", e)
+            return None
+
+    def close(self) -> None:
+        """Close kioku backend (SQLite cleanup)."""
+        if self.kioku:
+            try:
+                self.kioku.close()
+            except Exception:
+                pass
 
     async def consolidate(
         self,
@@ -75,76 +121,9 @@ class MemoryStore:
         archive_all: bool = False,
         memory_window: int = 50,
     ) -> bool:
-        """Consolidate old messages into MEMORY.md + HISTORY.md via LLM tool call.
-
-        Returns True on success (including no-op), False on failure.
-        """
-        if archive_all:
-            old_messages = session.messages
-            keep_count = 0
-            logger.info("Memory consolidation (archive_all): {} messages", len(session.messages))
-        else:
-            keep_count = memory_window // 2
-            if len(session.messages) <= keep_count:
-                return True
-            if len(session.messages) - session.last_consolidated <= 0:
-                return True
-            old_messages = session.messages[session.last_consolidated:-keep_count]
-            if not old_messages:
-                return True
-            logger.info("Memory consolidation: {} to consolidate, {} keep", len(old_messages), keep_count)
-
-        lines = []
-        for m in old_messages:
-            if not m.get("content"):
-                continue
-            tools = f" [tools: {', '.join(m['tools_used'])}]" if m.get("tools_used") else ""
-            lines.append(f"[{m.get('timestamp', '?')[:16]}] {m['role'].upper()}{tools}: {m['content']}")
-
-        current_memory = self.read_long_term()
-        prompt = f"""Process this conversation and call the save_memory tool with your consolidation.
-
-## Current Long-term Memory
-{current_memory or "(empty)"}
-
-## Conversation to Process
-{chr(10).join(lines)}"""
-
-        try:
-            response = await provider.chat(
-                messages=[
-                    {"role": "system", "content": "You are a memory consolidation agent. Call the save_memory tool with your consolidation of the conversation."},
-                    {"role": "user", "content": prompt},
-                ],
-                tools=_SAVE_MEMORY_TOOL,
-                model=model,
-            )
-
-            if not response.has_tool_calls:
-                logger.warning("Memory consolidation: LLM did not call save_memory, skipping")
-                return False
-
-            args = response.tool_calls[0].arguments
-            # Some providers return arguments as a JSON string instead of dict
-            if isinstance(args, str):
-                args = json.loads(args)
-            if not isinstance(args, dict):
-                logger.warning("Memory consolidation: unexpected arguments type {}", type(args).__name__)
-                return False
-
-            if entry := args.get("history_entry"):
-                if not isinstance(entry, str):
-                    entry = json.dumps(entry, ensure_ascii=False)
-                self.append_history(entry)
-            if update := args.get("memory_update"):
-                if not isinstance(update, str):
-                    update = json.dumps(update, ensure_ascii=False)
-                if update != current_memory:
-                    self.write_long_term(update)
-
-            session.last_consolidated = 0 if archive_all else len(session.messages) - keep_count
-            logger.info("Memory consolidation done: {} messages, last_consolidated={}", len(session.messages), session.last_consolidated)
-            return True
-        except Exception:
-            logger.exception("Memory consolidation failed")
-            return False
+        """Consolidate old messages into memory. Delegates to memory_consolidation module."""
+        from nanobot.agent.memory_consolidation import consolidate_memory
+        return await consolidate_memory(
+            self, session, provider, model,
+            archive_all=archive_all, memory_window=memory_window,
+        )

@@ -83,7 +83,10 @@ class AgentLoop:
         self.cron_service = cron_service
         self.restrict_to_workspace = restrict_to_workspace
 
-        self.context = ContextBuilder(workspace)
+        # Shared MemoryStore instance (kioku backend if available)
+        kioku_cfg = None
+        self.memory_store = MemoryStore(workspace, kioku_config=kioku_cfg)
+        self.context = ContextBuilder(workspace, memory_store=self.memory_store)
         self.sessions = session_manager or SessionManager(workspace)
         self.tools = ToolRegistry()
         self.subagents = SubagentManager(
@@ -129,6 +132,11 @@ class AgentLoop:
         self.tools.register(SpawnTool(manager=self.subagents))
         if self.cron_service:
             self.tools.register(CronTool(self.cron_service))
+        # Memory search tools (kioku backend)
+        if self.memory_store.kioku:
+            from nanobot.agent.tools.memory import MemoryRecallTool, MemorySearchTool
+            self.tools.register(MemorySearchTool(self.memory_store))
+            self.tools.register(MemoryRecallTool(self.memory_store))
 
     async def _connect_mcp(self) -> None:
         """Connect to configured MCP servers (one-time, lazy)."""
@@ -477,8 +485,8 @@ class AgentLoop:
         session.updated_at = datetime.now()
 
     async def _consolidate_memory(self, session, archive_all: bool = False) -> bool:
-        """Delegate to MemoryStore.consolidate(). Returns True on success."""
-        return await MemoryStore(self.workspace).consolidate(
+        """Delegate to shared MemoryStore.consolidate(). Returns True on success."""
+        return await self.memory_store.consolidate(
             session, self.provider, self.model,
             archive_all=archive_all, memory_window=self.memory_window,
         )

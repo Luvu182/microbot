@@ -217,6 +217,16 @@ class ChannelsConfig(Base):
     matrix: MatrixConfig = Field(default_factory=MatrixConfig)
 
 
+class KiokuConfig(Base):
+    """Kioku-lite memory backend configuration."""
+
+    enabled: bool = True
+    embed_provider: str = "fastembed"  # "fastembed" | "ollama" | "fake"
+    embed_model: str = "intfloat/multilingual-e5-large"
+    embed_dim: int = 1024
+    ollama_base_url: str = "http://localhost:11434"
+
+
 class AgentDefaults(Base):
     """Default agent configuration."""
 
@@ -228,6 +238,7 @@ class AgentDefaults(Base):
     max_tool_iterations: int = 40
     memory_window: int = 100
     reasoning_effort: str | None = None  # low / medium / high — enables LLM thinking mode
+    kioku: KiokuConfig = Field(default_factory=KiokuConfig)
 
 
 class AgentsConfig(Base):
