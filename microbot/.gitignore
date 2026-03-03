@@ -19,7 +19,7 @@ poetry.lock
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
-nanobot-env/
+microbot-env/
 var/
 node_modules/
 package-lock.json

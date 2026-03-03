@@ -192,7 +192,7 @@ def onboard():
     console.print("  1. Add your API key to [cyan]~/.microbot/config.json[/cyan]")
     console.print("     Get one at: https://openrouter.ai/keys")
     console.print("  2. Chat: [cyan]microbot agent -m \"Hello!\"[/cyan]")
-    console.print("\n[dim]Want Telegram/WhatsApp? See: https://github.com/HKUDS/nanobot#-chat-apps[/dim]")
+    console.print("\n[dim]Want Telegram/WhatsApp? See: https://github.com/Luvu182/microbot#-chat-apps[/dim]")
 
 
 
@@ -734,6 +734,23 @@ def channels_status():
         "Email",
         "✓" if em.enabled else "✗",
         em_config
+    )
+
+    # Zalo
+    zalo = config.channels.zalo
+    table.add_row(
+        "Zalo",
+        "✓" if zalo.enabled else "✗",
+        zalo.bridge_url if zalo.enabled else "[dim]not configured[/dim]"
+    )
+
+    # Matrix
+    mx = config.channels.matrix
+    mx_config = mx.homeserver if mx.homeserver else "[dim]not configured[/dim]"
+    table.add_row(
+        "Matrix",
+        "✓" if mx.enabled else "✗",
+        mx_config
     )
 
     console.print(table)

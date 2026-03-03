@@ -63,7 +63,7 @@ class ZaloBridgeClient:
         request_id = str(uuid.uuid4())[:8]
         cmd = {"requestId": request_id, "type": cmd_type, **params}
 
-        future: asyncio.Future = asyncio.get_event_loop().create_future()
+        future: asyncio.Future = asyncio.get_running_loop().create_future()
         self._pending[request_id] = future
 
         try:
