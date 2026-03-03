@@ -45,6 +45,7 @@ class AgentLoop:
     """
 
     _TOOL_RESULT_MAX_CHARS = 500
+    _TOOL_NO_TRUNCATE = {"search_memory", "recall_entity"}  # memory tools need full JSON
 
     def __init__(
         self,
@@ -65,6 +66,7 @@ class AgentLoop:
         session_manager: SessionManager | None = None,
         mcp_servers: dict | None = None,
         channels_config: ChannelsConfig | None = None,
+        kioku_config: dict | None = None,
     ):
         from nanobot.config.schema import ExecToolConfig
         self.bus = bus
@@ -84,8 +86,7 @@ class AgentLoop:
         self.restrict_to_workspace = restrict_to_workspace
 
         # Shared MemoryStore instance (kioku backend if available)
-        kioku_cfg = None
-        self.memory_store = MemoryStore(workspace, kioku_config=kioku_cfg)
+        self.memory_store = MemoryStore(workspace, kioku_config=kioku_config)
         self.context = ContextBuilder(workspace, memory_store=self.memory_store)
         self.sessions = session_manager or SessionManager(workspace)
         self.tools = ToolRegistry()
@@ -468,7 +469,9 @@ class AgentLoop:
             role, content = entry.get("role"), entry.get("content")
             if role == "assistant" and not content and not entry.get("tool_calls"):
                 continue  # skip empty assistant messages — they poison session context
-            if role == "tool" and isinstance(content, str) and len(content) > self._TOOL_RESULT_MAX_CHARS:
+            if (role == "tool" and isinstance(content, str)
+                    and len(content) > self._TOOL_RESULT_MAX_CHARS
+                    and entry.get("name") not in self._TOOL_NO_TRUNCATE):
                 entry["content"] = content[:self._TOOL_RESULT_MAX_CHARS] + "\n... (truncated)"
             elif role == "user":
                 if isinstance(content, str) and content.startswith(ContextBuilder._RUNTIME_CONTEXT_TAG):

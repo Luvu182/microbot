@@ -42,6 +42,7 @@ class MemoryStore:
                     embed_provider=cfg.get("embed_provider", "fastembed"),
                     embed_model=cfg.get("embed_model", "intfloat/multilingual-e5-large"),
                     embed_dim=cfg.get("embed_dim", 1024),
+                    ollama_base_url=cfg.get("ollama_base_url", "http://localhost:11434"),
                 )
                 self.kioku = KiokuLiteService(settings)
                 logger.info("Kioku memory backend initialized")

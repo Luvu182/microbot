@@ -49,7 +49,7 @@ class TestMemoryConsolidationTypeHandling:
     @pytest.mark.asyncio
     async def test_string_arguments_work(self, tmp_path: Path) -> None:
         """Normal case: LLM returns string arguments."""
-        store = MemoryStore(tmp_path)
+        store = MemoryStore(tmp_path, kioku_config={"enabled": False})
         provider = AsyncMock()
         provider.chat = AsyncMock(
             return_value=_make_tool_response(
@@ -69,7 +69,7 @@ class TestMemoryConsolidationTypeHandling:
     @pytest.mark.asyncio
     async def test_dict_arguments_serialized_to_json(self, tmp_path: Path) -> None:
         """Issue #1042: LLM returns dict instead of string — must not raise TypeError."""
-        store = MemoryStore(tmp_path)
+        store = MemoryStore(tmp_path, kioku_config={"enabled": False})
         provider = AsyncMock()
         provider.chat = AsyncMock(
             return_value=_make_tool_response(
@@ -94,7 +94,7 @@ class TestMemoryConsolidationTypeHandling:
     @pytest.mark.asyncio
     async def test_string_arguments_as_raw_json(self, tmp_path: Path) -> None:
         """Some providers return arguments as a JSON string instead of parsed dict."""
-        store = MemoryStore(tmp_path)
+        store = MemoryStore(tmp_path, kioku_config={"enabled": False})
         provider = AsyncMock()
 
         # Simulate arguments being a JSON string (not yet parsed)
@@ -122,7 +122,7 @@ class TestMemoryConsolidationTypeHandling:
     @pytest.mark.asyncio
     async def test_no_tool_call_returns_false(self, tmp_path: Path) -> None:
         """When LLM doesn't use the save_memory tool, return False."""
-        store = MemoryStore(tmp_path)
+        store = MemoryStore(tmp_path, kioku_config={"enabled": False})
         provider = AsyncMock()
         provider.chat = AsyncMock(
             return_value=LLMResponse(content="I summarized the conversation.", tool_calls=[])
@@ -137,7 +137,7 @@ class TestMemoryConsolidationTypeHandling:
     @pytest.mark.asyncio
     async def test_skips_when_few_messages(self, tmp_path: Path) -> None:
         """Consolidation should be a no-op when messages < keep_count."""
-        store = MemoryStore(tmp_path)
+        store = MemoryStore(tmp_path, kioku_config={"enabled": False})
         provider = AsyncMock()
         session = _make_session(message_count=10)
 
